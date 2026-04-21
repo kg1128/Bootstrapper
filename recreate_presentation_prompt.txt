@@ -1,0 +1,336 @@
+Create a self-contained single-file HTML presentation (no external dependencies) with the following exact specifications:
+
+═══════════════════════════════════════════════
+METADATA
+═══════════════════════════════════════════════
+Title: "From Copilot to Architect | MIM"
+Subtitle: "AI-Driven Development of an Investment Optimization Platform"
+Context: Case Study · Agentic AI · MIM Investment Strategy
+Date: April 2026 · MetLife Investment Management
+Total slides: 10
+
+═══════════════════════════════════════════════
+DESIGN SYSTEM — CSS VARIABLES
+═══════════════════════════════════════════════
+--blue:    #0090DA
+--dkblue:  #0061A0
+--green:   #A4CE4E
+--dkgray:  #75787B
+--mdgray:  #A7A8AA
+--ltgray:  #F2F2F2
+--teal:    #00ACA0
+--yellow:  #FFC600
+--berry:   #DB0A5B
+--white:   #ffffff
+--grad:    linear-gradient(90deg, #0090DA, #A4CE4E)
+--grad135: linear-gradient(135deg, #0090DA 0%, #A4CE4E 100%)
+--slide-w: 1100px
+--slide-h: 620px
+
+Body background: #e4e8ec
+Font: 'Helvetica Neue', Arial, sans-serif
+Serif font (headings/quotes): Georgia, 'Times New Roman', serif
+
+═══════════════════════════════════════════════
+LAYOUT
+═══════════════════════════════════════════════
+- Body: centered flex column, min-height 100vh, overflow hidden
+- .deck: fixed 1100×620px, position relative, box-shadow 0 8px 40px rgba(0,0,0,0.18)
+- Each .slide: position absolute, inset 0, white background, overflow hidden
+  - Inactive slides: opacity 0, pointer-events none, translateX(28px)
+  - Active slide: opacity 1, translateX(0), transition 0.3s ease
+- Every slide has a 4px gradient top bar (::before, full width, z-index 10)
+- Every slide has a 4px gradient left accent (::after, full height below top bar, z-index 10)
+- Slide number: top-right, 10px, mdgray, letter-spacing 1.5px
+- Logo text "MIM": bottom-right, 10px, bold, 2px letter-spacing, mdgray, uppercase
+- Inner padding (.si): 28px top, 44px right, 22px bottom, 52px left; flex column
+
+NAVIGATION (below the deck):
+- Prev / Next buttons with disabled states
+- Progress dots (clickable, active dot scales 1.4×, color var(--blue))
+- Slide counter "X / 10"
+- Keyboard support: ArrowRight/Down/Space = next; ArrowLeft/Up = prev
+
+═══════════════════════════════════════════════
+REUSABLE COMPONENTS
+═══════════════════════════════════════════════
+
+EYEBROW: 10px, bold, 3px letter-spacing, uppercase, blue, margin-bottom 8px
+
+H2 HEADINGS: Georgia serif, 27px, dkblue; <em> children are italic blue
+
+DIVIDER: 40×3px, gradient background, border-radius 2px, margin 6px 0 12px
+
+CARD (.card):
+  border-radius 5px, padding 14px 16px, white bg, border 1px solid #dce8f2
+  box-shadow 0 2px 6px rgba(0,97,160,0.06)
+  .card-label: 9px, bold, 2.5px letter-spacing, uppercase, margin-bottom 5px
+  .card-head: Georgia serif, 14px, dkblue, margin-bottom 8px, line-height 1.35
+  .card ul li: 12px, dkgray, line-height 1.6, left-padded 12px
+  li::before: content '–', absolute left 0, blue color
+
+PROMPT BUBBLE (.prompt):
+  margin-top 8px, background #f0f7fd, border 1px solid #c2ddf2
+  border-radius 5px, padding 7px 10px, 11px italic dkblue text
+  ::before content: '💬 ' (non-italic)
+
+QUOTE (.q):
+  border-left 3px solid blue, padding 10px 18px, background #f0f7fd
+  border-radius 0 5px 5px 0
+  Inner <p>: Georgia serif, 14px, italic, dkblue, line-height 1.5
+
+BULLET LIST (.blist):
+  li: 14px dkgray, padding 8px 0 8px 22px, border-bottom 1px solid #edf2f7
+  li::before: 8×3px absolute bar, gradient, border-radius 2px, top 17px left 0
+  li strong: dkblue
+
+STAT ROW (.stat-row): flex, gap 12px
+  .stat: flex 1, border-radius 5px, padding 12px 16px, center-aligned
+    background rgba(0,144,218,0.06), border rgba(0,144,218,0.18)
+    .num: Georgia serif, 34px, blue
+    .lbl: 9px, dkgray, bold, 1.5px letter-spacing, uppercase
+
+TABLE (.tbl):
+  th: dkblue bg, white text, 10px bold uppercase 1.5px letter-spacing, padding 8px 12px
+  td: 13px dkgray, padding 8px 12px, border-bottom 1px solid #dde8f2
+  Even rows: background #f6fafd
+  First td in row: dkblue, font-weight 600
+
+FLOW (.flow): flex, align-items stretch, flex 1
+  .flow-box: card-like, border-radius 5px, padding 12px 10px, center-aligned flex column
+  .fb-who: 8px bold, 2px letter-spacing, uppercase; .human = dkblue, .ai = #5a8a00
+  .fb-what: 12px dkgray, line-height 1.45
+  .flow-arrow: 16px mdgray, padding 0 5px, self-center
+
+BEFORE/AFTER (.ba): 2-col grid, gap 14px
+  .ba-before: background rgba(219,10,91,0.05), border rgba(219,10,91,0.2)
+  .ba-after:  background rgba(164,206,78,0.08), border rgba(164,206,78,0.3)
+  .ba-tag: 9px bold uppercase 2.5px letter-spacing; before=berry, after=#5a8a00
+  .ba-box p: 13px dkgray, line-height 1.65
+
+TAKEAWAY ROW (.tk): flex, align-items flex-start, gap 14px, padding 9px 0, border-bottom
+  .tk-num: Georgia serif, 28px, blue, opacity 0.45, min-width 34px
+  .tk-body strong: block, 14px dkblue
+  .tk-body span: 12px dkgray
+
+USE CASE GRID (.uc-grid): 2-col grid, gap 10px
+  .uc: border-radius 5px, padding 12px 14px, background #f6fafd, border 1px solid #dce8f2
+  .uc-title: 12px bold dkblue, margin-bottom 4px
+  .uc-items: 11px dkgray, line-height 1.6
+
+═══════════════════════════════════════════════
+SLIDES — FULL CONTENT
+═══════════════════════════════════════════════
+
+── SLIDE 01: TITLE ──
+Layout: justify-content center, padding-left 56px
+Decorative circle: position absolute, right -100px, top -100px, 420×420px,
+  border-radius 50%, radial-gradient(circle, rgba(0,144,218,0.06) 0%, transparent 70%)
+
+Content:
+  Eyebrow: "Case Study · Agentic AI · MIM Investment Strategy"
+  H1 (48px Georgia dkblue): "From Copilot" / "to Architect" (<em>Architect</em> is italic blue)
+  Divider
+  Italic Georgia 17px dkgray: "AI-Driven Development of an Investment Optimization Platform"
+  Small text (12px mdgray, margin-top 20px): "April 2026 · MetLife Investment Management"
+
+── SLIDE 02: TWO ERAS ──
+Eyebrow: "The Shift"
+H2: "Two Eras of AI" (AI in <em>)
+
+2-column card grid (flex 1):
+
+LEFT CARD (border-top 3px mdgray):
+  Label (dkgray): "Phase 1 — Helper"
+  Head: "AI assists your work"
+  Bullets:
+    - Summarize documents, draft emails
+    - Coding assistant — suggest snippets
+    - Human still owns architecture & logic
+    - Value: saves [bold]minutes per task[/bold]
+  Prompt bubble: "Summarize this credit memo in 3 bullets"
+
+RIGHT CARD (border-top 3px blue):
+  Label (blue): "Phase 2 — Agent"
+  Head: "AI builds the solution"
+  Bullets:
+    - You define the [em]what[/em] — AI owns the [em]how[/em]
+    - Writes the model, code, UI, exports — iteratively
+    - Value: [bold]speed, cost, expanded capabilities[/bold]
+  Prompt bubble: "Build an optimizer that maximizes yield subject to duration and BSCR constraints, with an interactive UI"
+
+Quote (margin-top 10px): "Not just faster typing — a fundamentally different division of labor."
+
+── SLIDE 03: WHAT WE BUILT ──
+Eyebrow: "What We Built"
+H2: "SAA Optimizer — Production-Grade" (Production-Grade in <em>)
+Divider
+
+Table with columns "Capability" and "What it does":
+  Portfolio Optimization    | Maximizes yield subject to duration, BSCR, WARF, liquidity & AC constraints
+  Sensitivity Analysis      | 3-parameter grid search across any constraint combination
+  Interactive Visualization | On-the-fly charts — instantly see impact of constraint changes, easy to understand
+  Session Management        | Save, load, and compare multiple portfolios
+  Excel Export              | Formatted multi-tab report with portfolio summary
+
+Yellow left-border callout (margin-top 10px, Georgia 13px, dkblue italic, border-left 3px yellow, padding-left 12px):
+  "A team of quants & developers would typically take months to build this."
+
+── SLIDE 04: DEMO ──
+Layout: demo-center (flex column, align center, justify center, flex 1, text-align center)
+
+Play button circle (64×64px, grad135 background, box-shadow 0 6px 24px rgba(0,144,218,0.3)):
+  ▶ (22px white)
+
+H2 (centered, margin-bottom 4px): "Live Demo"
+Subtitle (mdgray, 13px, italic Georgia): "~2 minutes"
+
+Three demo step cards (.demo-steps, flex, gap 12px):
+  Step 1: "Load session" / "4 portfolios (3y–6y)"
+  Step 2: "Optimizer output" / "& sensitivity grid"
+  Step 3: "Export to Excel" / "Portfolio Summary tab"
+  Each card: background #f0f7fd, border 1px #c2ddf2, border-radius 5px, padding 12px 16px
+  Step label: dkblue, 10px, uppercase, 1px letter-spacing, bold
+
+── SLIDE 05: HOW IT WAS BUILT ──
+Eyebrow: "Development Process"
+H2: "Director + Agent" (+ in <em>)
+Divider
+
+Flow row (4 boxes with arrows):
+  [Human] "Define objective, constraints & data"
+  → [AI Agent] "Design architecture, write optimizer & UI"
+  → [Human] "Review, test, redirect"
+  → [Repeat] "Features ship in [bold green]hours[/bold], not weeks"
+    (last box has border-color rgba(164,206,78,0.4), background rgba(164,206,78,0.06))
+
+Quote (margin-top 12px): "Every feature was built through natural language conversation with an AI agent."
+
+── SLIDE 06: BUSINESS VALUE ──
+Eyebrow: "Business Value"
+H2: "Three Gains" (Gains in <em>)
+Divider
+
+3-column card grid (flex 1):
+
+SPEED CARD (border-top 3px blue):
+  Label (blue): "Speed"
+  Head: "Traditional: 3–6 months" / blue span "Agentic: days"
+  Bullets: Iteration in hours, not sprints | No dev queue, no waiting
+
+COST CARD (border-top 3px teal):
+  Label (teal): "Cost"
+  Head: "AI subscription vs." / teal span "FTE / external model"
+  Bullets: Domain expert is the developer | Removes translation layer entirely
+
+CAPABILITY CARD (border-top 3px #7ab800):
+  Label (#5a8a00): "Capability"
+  Head: "The question shifts:"
+  Inline cap-shift box (flex column, gap 4px, padding 8px 10px, bg #f0f7fd, border #c2ddf2):
+    12px italic dkgray: "Can we build it?"
+    16px blue: ↓
+    12px bold italic dkblue: "Can we define it well?"
+  Bullet: Ideas that never reached the dev queue now ship
+
+Stat row (margin-top 10px):
+  "10×"   FASTER DELIVERY (blue)
+  "90%↓"  DEV COST (teal bg/border)
+  "∞"     IDEAS NOW POSSIBLE (green bg/border, #5a8a00 text)
+
+── SLIDE 07: THE REAL UNLOCK ──
+Eyebrow: "The Real Unlock"
+H2: "The Constraint Was Never Intelligence — It Was Bandwidth"
+  (Intelligence in <em>)
+Divider
+
+Before/After 2-col grid (flex 1):
+  BEFORE (berry):
+    "PM has an idea → writes spec → waits for IT → reviews → iterates →
+    [bold berry]6 months later, the market has moved[/bold]"
+  AFTER (#5a8a00):
+    "PM has an idea → describes it to AI agent →
+    [bold green]working prototype the same afternoon[/bold]"
+
+Quote (margin-top 10px): "The people who understand the problem best can now build the solution directly."
+
+── SLIDE 08: WHAT THIS IS NOT ──
+Eyebrow: "Managing Expectations"
+H2: "This Isn't Magic" (Magic in <em>)
+Divider
+
+Bullet list (flex 1):
+  - [bold]AI makes mistakes[/bold] — domain expertise is essential for validation
+  - [bold]Compliance & audit[/bold] requirements still need human oversight
+  - [bold]Production deployment[/bold] still requires engineering review
+  - [bold]The human role doesn't disappear[/bold] — it elevates
+
+Role shift row (margin-top 14px):
+  LEFT BOX (bg rgba(219,10,91,0.05), border rgba(219,10,91,0.18)):
+    Label (berry): "Before"
+    Title (dkgray, Georgia 20px): "Executor"
+  Arrow: → (24px blue)
+  RIGHT BOX (bg rgba(0,144,218,0.06), border rgba(0,144,218,0.2)):
+    Label (blue): "After"
+    Title (dkblue, Georgia 20px, bold): "Architect"
+
+── SLIDE 09: STRATEGIC IMPLICATION ──
+Eyebrow: "Strategic Implication"
+H2: "The Question Isn't 'Should We?' — It's 'How Fast Are We Moving?'"
+  ('Should We?' in <em>)
+Divider
+
+Bullet list (margin-bottom 10px):
+  - [bold]Early movers[/bold] build institutional capability and muscle memory now
+  - [bold]The gap compounds[/bold] — AI-enabled teams widen their edge every cycle
+
+Use case grid (2×2):
+  Portfolio Analysis      | Attribution · compliance monitoring · benchmarking
+  Financial Modeling      | Cash flow models · scenario analysis · stress testing
+  Visualizations          | Interactive dashboards · on-the-fly risk views · allocation charts
+  Client Materials        | Automated reporting · pitch decks · factsheet generation
+
+Quote (margin-top 10px): "→ Identify the next 3 problems where a domain expert + AI agent can ship in weeks."
+
+── SLIDE 10: KEY TAKEAWAYS ──
+Eyebrow: "Summary"
+H2: "Key Takeaways" (Takeaways in <em>)
+Divider
+
+4 takeaway rows (flex 1):
+  1 | "AI has crossed a threshold — from assistant to agent"
+      "The division of labor has fundamentally changed"
+
+  2 | "The bottleneck moves"
+      "From 'can we build it?' to 'can we define it well?' — domain expertise is now the critical input"
+
+  3 | "Value is measurable"
+      "10× speed · significant cost reduction · expanded analytical capability"
+
+  4 | "Domain expertise is the scarcest resource — and now the most powerful one"
+      "Subject matter experts can operationalize ideas that would never have reached the dev queue"
+
+Closing callout (margin-top 12px, Georgia 13px, italic dkgray, border-left 3px blue, padding-left 12px):
+  "The firms that combine deep domain knowledge with agentic AI will have a durable advantage."
+
+═══════════════════════════════════════════════
+JAVASCRIPT BEHAVIOR
+═══════════════════════════════════════════════
+- Track current slide index (starts at 0)
+- goTo(n): remove 'active' from current slide and dot, clamp n, add 'active' to new slide and dot,
+  update counter text, update prev/next disabled states
+- Prev button: goTo(cur - 1), disabled when cur === 0
+- Next button: goTo(cur + 1), disabled when cur === slides.length - 1
+- Dots: each dot clicks goTo(i)
+- Keyboard: ArrowRight, ArrowDown, Space = next; ArrowLeft, ArrowUp = prev
+- Active dot has class 'on' (blue, scale 1.4×); inactive dots are rgba(0,97,160,0.2)
+- Counter format: "X / 10"
+
+═══════════════════════════════════════════════
+OUTPUT REQUIREMENTS
+═══════════════════════════════════════════════
+- Single .html file, no external CDN links, no external fonts (use system fonts only)
+- All CSS inline in <style> tag in <head>
+- All JS inline in <script> tag before </body>
+- Pixel-perfect recreation of the 1100×620px slide deck
+- All 10 slides present and navigable
+- All text content, color values, and layout measurements must match exactly

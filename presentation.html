@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>From Copilot to Architect | MIM</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue:    #0090DA;
+    --dkblue:  #0061A0;
+    --green:   #A4CE4E;
+    --dkgray:  #75787B;
+    --mdgray:  #A7A8AA;
+    --ltgray:  #F2F2F2;
+    --teal:    #00ACA0;
+    --yellow:  #FFC600;
+    --berry:   #DB0A5B;
+    --white:   #ffffff;
+    --grad:    linear-gradient(90deg, #0090DA, #A4CE4E);
+    --grad135: linear-gradient(135deg, #0090DA 0%, #A4CE4E 100%);
+    --slide-w: 1100px;
+    --slide-h: 620px;
+  }
+
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: #e4e8ec;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .deck { position: relative; width: var(--slide-w); height: var(--slide-h); box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    background: var(--white);
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateX(28px);
+  }
+  .slide.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+
+  /* MIM gradient top bar */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--grad);
+    z-index: 10;
+  }
+
+  /* MIM gradient left accent */
+  .slide::after {
+    content: '';
+    position: absolute;
+    top: 4px; left: 0; bottom: 0;
+    width: 4px;
+    background: var(--grad135);
+    z-index: 10;
+  }
+
+  .slide-num {
+    position: absolute;
+    top: 14px; right: 24px;
+    font-size: 10px;
+    color: var(--mdgray);
+    letter-spacing: 1.5px;
+  }
+  .slide-logo {
+    position: absolute;
+    bottom: 14px; right: 24px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--mdgray);
+    text-transform: uppercase;
+  }
+
+  /* Inner layout */
+  .si {
+    padding: 28px 44px 22px 52px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Typography — Georgia per MIM guidelines (desktop sub for Utopia Display) */
+  h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: normal; }
+  h1 { font-size: 48px; line-height: 1.1; color: var(--dkblue); }
+  h1 em { font-style: italic; color: var(--blue); }
+  h2 { font-size: 27px; line-height: 1.2; color: var(--dkblue); margin-bottom: 4px; }
+  h2 em { font-style: italic; color: var(--blue); }
+
+  .eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--blue); margin-bottom: 8px;
+  }
+  .divider {
+    width: 40px; height: 3px;
+    background: var(--grad); border-radius: 2px;
+    margin: 6px 0 12px;
+  }
+
+  /* Cards */
+  .card {
+    border-radius: 5px; padding: 14px 16px;
+    background: var(--white);
+    border: 1px solid #dce8f2;
+    box-shadow: 0 2px 6px rgba(0,97,160,0.06);
+  }
+  .card-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; margin-bottom: 5px;
+  }
+  .card-head {
+    font-family: Georgia, serif; font-size: 14px;
+    color: var(--dkblue); margin-bottom: 8px; line-height: 1.35;
+  }
+  .card ul { list-style: none; }
+  .card ul li {
+    font-size: 12px; color: var(--dkgray); line-height: 1.6;
+    padding-left: 12px; position: relative;
+  }
+  .card ul li::before { content: '–'; position: absolute; left: 0; color: var(--blue); }
+
+  /* Prompt bubble */
+  .prompt {
+    margin-top: 8px;
+    background: #f0f7fd;
+    border: 1px solid #c2ddf2;
+    border-radius: 5px;
+    padding: 7px 10px;
+    font-size: 11px;
+    color: var(--dkblue);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .prompt::before { content: '💬 '; font-style: normal; }
+
+  /* Cols */
+  .cols { display: grid; gap: 14px; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* Bullets */
+  .blist { list-style: none; }
+  .blist li {
+    font-size: 14px; color: var(--dkgray);
+    padding: 8px 0 8px 22px;
+    border-bottom: 1px solid #edf2f7;
+    position: relative; line-height: 1.45;
+  }
+  .blist li::before {
+    content: ''; position: absolute; left: 0; top: 17px;
+    width: 8px; height: 3px; background: var(--grad); border-radius: 2px;
+  }
+  .blist li strong { color: var(--dkblue); }
+
+  /* Stats */
+  .stat-row { display: flex; gap: 12px; }
+  .stat {
+    flex: 1; border-radius: 5px; padding: 12px 16px; text-align: center;
+    background: rgba(0,144,218,0.06); border: 1px solid rgba(0,144,218,0.18);
+  }
+  .stat .num {
+    font-family: Georgia, serif; font-size: 34px;
+    color: var(--blue); line-height: 1;
+  }
+  .stat .lbl {
+    font-size: 9px; color: var(--dkgray); margin-top: 4px;
+    font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  }
+
+  /* Table */
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th {
+    background: var(--dkblue); color: var(--white);
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; padding: 8px 12px; text-align: left;
+  }
+  .tbl td {
+    padding: 8px 12px; font-size: 13px; color: var(--dkgray);
+    border-bottom: 1px solid #dde8f2;
+  }
+  .tbl tr:nth-child(even) td { background: #f6fafd; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl td:first-child { color: var(--dkblue); font-weight: 600; }
+
+  /* Flow */
+  .flow { display: flex; align-items: stretch; gap: 0; flex: 1; }
+  .flow-box {
+    border-radius: 5px; padding: 12px 10px; text-align: center; flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .fb-who {
+    font-size: 8px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 5px;
+  }
+  .fb-who.human { color: var(--dkblue); }
+  .fb-who.ai    { color: #5a8a00; }
+  .fb-what { font-size: 12px; color: var(--dkgray); line-height: 1.45; }
+  .flow-arrow { font-size: 16px; color: var(--mdgray); padding: 0 5px; align-self: center; flex-shrink: 0; }
+
+  /* Quote */
+  .q {
+    border-left: 3px solid var(--blue);
+    padding: 10px 18px; background: #f0f7fd;
+    border-radius: 0 5px 5px 0;
+  }
+  .q p {
+    font-family: Georgia, serif; font-size: 14px;
+    font-style: italic; color: var(--dkblue); line-height: 1.5;
+  }
+
+  /* Before/After */
+  .ba { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .ba-box { border-radius: 5px; padding: 16px 18px; }
+  .ba-before { background: rgba(219,10,91,0.05); border: 1px solid rgba(219,10,91,0.2); }
+  .ba-after  { background: rgba(164,206,78,0.08); border: 1px solid rgba(164,206,78,0.3); }
+  .ba-tag {
+    font-size: 9px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .ba-before .ba-tag { color: var(--berry); }
+  .ba-after  .ba-tag { color: #5a8a00; }
+  .ba-box p { font-size: 13px; color: var(--dkgray); line-height: 1.65; }
+
+  /* Takeaways */
+  .tk { display: flex; align-items: flex-start; gap: 14px; padding: 9px 0; border-bottom: 1px solid #edf2f7; }
+  .tk-num {
+    font-family: Georgia, serif; font-size: 28px; font-weight: normal;
+    color: var(--blue); line-height: 1; min-width: 34px; opacity: 0.45;
+  }
+  .tk-body strong { display: block; font-size: 14px; color: var(--dkblue); margin-bottom: 1px; }
+  .tk-body span { font-size: 12px; color: var(--dkgray); }
+
+  /* Demo */
+  .demo-center {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; flex: 1; text-align: center;
+  }
+  .play-btn {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--grad135);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: white; margin-bottom: 14px;
+    box-shadow: 0 6px 24px rgba(0,144,218,0.3);
+  }
+  .demo-steps { display: flex; gap: 12px; margin-top: 16px; }
+  .demo-step {
+    background: #f0f7fd; border: 1px solid #c2ddf2;
+    border-radius: 5px; padding: 12px 16px;
+    font-size: 12px; color: var(--dkgray); text-align: center;
+  }
+  .demo-step strong {
+    display: block; color: var(--dkblue); margin-bottom: 3px;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  /* Role shift */
+  .role-shift { display: flex; align-items: center; gap: 16px; margin-top: 14px; }
+  .role-box { flex: 1; border-radius: 5px; padding: 12px 18px; text-align: center; }
+  .role-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .role-title { font-family: Georgia, serif; font-size: 20px; }
+
+  /* Use case grid */
+  .uc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; flex: 1; }
+  .uc {
+    border-radius: 5px; padding: 12px 14px;
+    background: #f6fafd; border: 1px solid #dce8f2;
+  }
+  .uc-title { font-size: 12px; font-weight: 700; color: var(--dkblue); margin-bottom: 4px; }
+  .uc-items { font-size: 11px; color: var(--dkgray); line-height: 1.6; }
+
+  /* Capability shift visual */
+  .cap-shift {
+    display: flex; align-items: center; gap: 10px;
+    background: #f0f7fd; border: 1px solid #c2ddf2;
+    border-radius: 5px; padding: 12px 16px; margin-top: 8px;
+  }
+  .cap-box { flex: 1; text-align: center; }
+  .cap-box .cap-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .cap-box .cap-text { font-family: Georgia, serif; font-size: 13px; font-style: italic; color: var(--dkblue); }
+  .cap-arrow { font-size: 20px; color: var(--blue); flex-shrink: 0; }
+
+  /* Navigation */
+  .nav { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+  .nav-btn {
+    background: rgba(0,97,160,0.08); border: 1px solid rgba(0,97,160,0.2);
+    color: var(--dkblue); border-radius: 4px; padding: 6px 18px;
+    font-size: 12px; font-family: inherit; font-weight: 500;
+    cursor: pointer; transition: background 0.2s; letter-spacing: 0.5px;
+  }
+  .nav-btn:hover { background: rgba(0,144,218,0.15); }
+  .nav-btn:disabled { opacity: 0.25; cursor: default; }
+  .progress-dots { display: flex; gap: 6px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(0,97,160,0.2); cursor: pointer; transition: background 0.2s, transform 0.2s; }
+  .dot.on { background: var(--blue); transform: scale(1.4); }
+  .slide-counter { font-size: 11px; color: var(--mdgray); min-width: 44px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ── 01 TITLE ── -->
+  <div class="slide active">
+    <div class="slide-num">01 / 10</div>
+    <div class="slide-logo">MIM</div>
+    <div style="position:absolute;right:-100px;top:-100px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(0,144,218,0.06) 0%,transparent 70%);pointer-events:none;"></div>
+    <div class="si" style="justify-content:center;padding-left:56px;">
+      <div class="eyebrow">Case Study · Agentic AI · MIM Investment Strategy</div>
+      <h1>From Copilot<br>to <em>Architect</em></h1>
+      <div class="divider"></div>
+      <p style="font-family:Georgia,serif;font-style:italic;font-size:17px;color:var(--dkgray);margin-top:4px;">AI-Driven Development of an Investment Optimization Platform</p>
+      <p style="font-size:12px;color:var(--mdgray);margin-top:20px;letter-spacing:0.5px;">April 2026 &nbsp;·&nbsp; MetLife Investment Management</p>
+    </div>
+  </div>
+
+  <!-- ── 02 TWO ERAS ── -->
+  <div class="slide">
+    <div class="slide-num">02 / 10</div>
+    <div class="slide-logo">MIM</div>
+    <div class="si">
+      <div class="eyebrow">The Shift</div>
+      <h2>Two Eras of <em>AI</em></h2>
+      <div class="divider"></div>
+      <div class="cols cols-2" style="flex:1;">
+        <div class="card" style="border-top:3px solid var(--mdgray);">
+          <div class="card-label" style="color:var(--dkgray);">Phase 1 — Helper</div>
+          <div class="card-head">AI assists your work</div>
+          <ul>
+            <li>Summarize documents, draft emails</li>
+            <li>Coding assistant — suggest snippets</li>
+            <li>Human still owns architecture &amp; logic</li>
+            <li>Value: saves <strong>minutes per task</strong></li>
+          </ul>
+          <div class="prompt">"Summarize this credit memo in 3 bullets"</div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--blue);">
+          <div class="card-label" style="color:var(--blue);">Phase 2 — Agent</div>
+          <div class="card-head">AI builds the solution</div>
+          <ul>
+            <li>You define the <em>what</em> — AI owns the <em>how</em></li>
+            <li>Writes the model, code, UI, exports — iteratively</li>
+            <li>Value: <strong>speed, cost, expanded capabilities</strong></li>
+          </ul>
+          <div class="prompt">"Build an optimizer that maximizes yield subject to duration and BSCR constraints, with an interactive UI"</div>
+        </div>
+      </div>
+      <div class="q" style="margin-top:10px;">
+        <p>"Not just faster typing — a fundamentally different division of labor."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 03 WHAT WE BUILT ── -->
+  <div class="slide">
+    <div class="slide-num">03 / 10</div>
+    <div class="slide-logo">MIM</div>
+    <div class="si">
+      <div class="eyebrow">What We Built</div>
+      <h2>SAA Optimizer — <em>Production-Grade</em></h2>
+      <div class="divider"></div>
+      <table class="tbl" style="margin-top:0;flex:1;">
+        <thead><tr><th>Capability</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Portfolio Optimization</td><td>Maximizes yield subject to duration, BSCR, WARF, liquidity &amp; AC constraints</td></tr>
+          <tr><td>Sensitivity Analysis</td><td>3-parameter grid search across any constraint combination</td></tr>
+          <tr><td>Interactive Visualization</td><td>On-the-fly charts — instantly see impact of constraint changes, easy to understand</td></tr>
+          <tr><td>Session Management</td><td>Save, load, and compare multiple portfolios</td></tr>
+          <tr><td>Excel Export</td><td>Formatted multi-tab report with portfolio summary</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:10px;font-family:Georgia,serif;font-size:13px;color:var(--dkblue);font-style:italic;border-left:3px solid var(--yellow);padding-left:12px;">
+        A team of quants &amp; developers would typically take months to build this.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 04 DEMO ── -->
+  <div class="slide">
+    <div class="slide-num">04 / 10</div>
+    <div class="slide-logo">MIM</div>
+    <div class="si">
+      <div class="demo-center">
+        <div class="play-btn">▶</div>
+        <h2 style="text-align:center;margin-bottom:4px;">Live Demo</h2>
+        <p style="color:var(--mdgray);font-size:13px;font-style:italic;font-family:Georgia,serif;">~2 minutes</p>
+        <div class="demo-steps">
+          <div class="demo-step"><strong>Step 1</strong>Load session<br>4 portfolios (3y–6y)</div>
+          <div class="demo-step"><strong>Step 2</strong>Optimizer output<br>&amp; sensitivity grid</div>
+          <div class="demo-step"><strong>Step 3</strong>Export to Excel<br>Portfolio Summary tab</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 05 HOW IT WAS BUILT ── -->
+  <div class="slide">
+    <div class="slide-num">05 / 10</div>
+    <div class="slide-logo">MIM</div>
+    <div class="si">
+      <div class="eyebrow">Development Process</div>
+      <h2>Director <em>+</em> Agent</h2>
+      <div class="divider"></div>
+      <div class="flow">
+        <div class="flow-box card">
+          <div class="fb-who human">Human</div>
+          <div class="fb-what">Define objective,<br>constraints &amp; data</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box card">
+          <div class="fb-who ai">AI Agent</div>
+          <div class="fb-what">Design architecture,<br>write optimizer &amp; UI</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box card">
+          <div class="fb-who human">Human</div>
+          <div class="fb-what">Review, test,<br>redirect</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box card" style="border-color:rgba(164,206,78,0.4);background:rgba(164,206,78,0.06);">
+          <div class="fb-who ai">Repeat</div>
+          <div class="fb-what">Features ship in<br><strong style="color:#5a8a00;">hours</strong>, not weeks</div>
+        </div>
+      </div>
+      <div class="q" style="margin-top:12px;">
+        <p>"Every feature was built through natural language conversation with an AI agent."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 06 BUSINESS VALUE ── -->
+  <div class="slide">
+    <div class="slide-num">06 / 10</div>
+    <div class="slide-logo">MIM</div>
+    <div class="si">
+      <div class="eyebrow">Business Value</div>
+      <h2>Three <em>Gains</em></h2>
+      <div class="divider"></div>
+      <div class="cols cols-3" style="flex:1;">
+        <div class="card" style="border-top:3px solid var(--blue);">
+          <div class="card-label" style="color:var(--blue);">Speed</div>
+          <div class="card-head">Traditional: 3–6 months<br><span style="color:var(--blue);">Agentic: days</span></div>
+          <ul><li>Iteration in hours, not sprints</li><li>No dev queue, no waiting</li></ul>
+        </div>
+        <div class="card" style="border-top:3px solid var(--teal);">
+          <div class="card-label" style="color:var(--teal);">Cost</div>
+          <div class="card-head">AI subscription vs.<br><span style="color:var(--teal);">FTE / external model</span></div>
+          <ul><li>Domain expert is the developer</li><li>Removes translation layer entirely</li></ul>
+        </div>
+        <div class="card" style="border-top:3px solid #7ab800;">
+          <div class="card-label" style="color:#5a8a00;">Capability</div>
+          <div class="card-head">The question shifts:</div>
+          <div class="cap-shift" style="margin-top:6px;flex-direction:column;gap:4px;padding:8px 10px;">
+            <div style="font-size:12px;color:var(--dkgray);font-style:italic;">"Can we build it?"</div>
+            <div style="font-size:16px;color:var(--blue);">↓</div>
+            <div style="font-size:12px;color:var(--dkblue);font-weight:700;font-style:italic;">"Can we define it well?"</div>
+          </div>
+          <ul style="margin-top:6px;"><li>Ideas that never reached the dev queue now ship</li></ul>
+        </div>
+      </div>
+      <div class="stat-row" style="margin-top:10px;">
+        <div class="stat"><div class="num">10×</div><div class="lbl">Faster Delivery</div></div>
+        <div class="stat" style="background:rgba(0,172,160,0.06);border-color:rgba(0,172,160,0.18);"><div class="num" style="color:var(--teal);">90%↓</div><div class="lbl">Dev Cost</div></div>
+        <div class="stat" style="background:rgba(164,206,78,0.06);border-color:rgba(164,206,78,0.22);"><div class="num" style="color:#5a8a00;">∞</div><div class="lbl">Ideas Now Possible</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 07 REAL UNLOCK ── -->
+  <div class="slide">
+    <div class="slide-num">07 / 10</div>
+    <div class="slide-logo">MIM</div>
+    <div class="si">
+      <div class="eyebrow">The Real Unlock</div>
+      <h2>The Constraint Was Never <em>Intelligence</em> — It Was Bandwidth</h2>
+      <div class="divider"></div>
+      <div class="ba" style="flex:1;">
+        <div class="ba-box ba-before">
+          <div class="ba-tag">Before</div>
+          <p>PM has an idea → writes spec → waits for IT → reviews → iterates →<br><strong style="color:var(--berry);">6 months later, the market has moved</strong></p>
+        </div>
+        <div class="ba-box ba-after">
+          <div class="ba-tag">After</div>
+          <p>PM has an idea → describes it to AI agent →<br><strong style="color:#5a8a00;">working prototype the same afternoon</strong></p>
+        </div>
+      </div>
+      <div class="q" style="margin-top:10px;">
+        <p>"The people who understand the problem best can now build the solution directly."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 08 WHAT THIS IS NOT ── -->
+  <div class="slide">
+    <div class="slide-num">08 / 10</div>
+    <div class="slide-logo">MIM</div>
+    <div class="si">
+      <div class="eyebrow">Managing Expectations</div>
+      <h2>This Isn't <em>Magic</em></h2>
+      <div class="divider"></div>
+      <ul class="blist" style="flex:1;">
+        <li><strong>AI makes mistakes</strong> — domain expertise is essential for validation</li>
+        <li><strong>Compliance &amp; audit</strong> requirements still need human oversight</li>
+        <li><strong>Production deployment</strong> still requires engineering review</li>
+        <li><strong>The human role doesn't disappear</strong> — it elevates</li>
+      </ul>
+      <div class="role-shift">
+        <div class="role-box" style="background:rgba(219,10,91,0.05);border:1px solid rgba(219,10,91,0.18);">
+          <div class="role-label" style="color:var(--berry);">Before</div>
+          <div class="role-title" style="color:var(--dkgray);">Executor</div>
+        </div>
+        <div style="font-size:24px;color:var(--blue);">→</div>
+        <div class="role-box" style="background:rgba(0,144,218,0.06);border:1px solid rgba(0,144,218,0.2);">
+          <div class="role-label" style="color:var(--blue);">After</div>
+          <div class="role-title" style="color:var(--dkblue);font-weight:700;">Architect</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 09 STRATEGIC IMPLICATION ── -->
+  <div class="slide">
+    <div class="slide-num">09 / 10</div>
+    <div class="slide-logo">MIM</div>
+    <div class="si">
+      <div class="eyebrow">Strategic Implication</div>
+      <h2>The Question Isn't <em>"Should We?"</em> — It's "How Fast Are We Moving?"</h2>
+      <div class="divider"></div>
+      <ul class="blist" style="margin-bottom:10px;">
+        <li><strong>Early movers</strong> build institutional capability and muscle memory now</li>
+        <li><strong>The gap compounds</strong> — AI-enabled teams widen their edge every cycle</li>
+      </ul>
+      <div class="uc-grid">
+        <div class="uc">
+          <div class="uc-title">Portfolio Analysis</div>
+          <div class="uc-items">Attribution · compliance monitoring · benchmarking</div>
+        </div>
+        <div class="uc">
+          <div class="uc-title">Financial Modeling</div>
+          <div class="uc-items">Cash flow models · scenario analysis · stress testing</div>
+        </div>
+        <div class="uc">
+          <div class="uc-title">Visualizations</div>
+          <div class="uc-items">Interactive dashboards · on-the-fly risk views · allocation charts</div>
+        </div>
+        <div class="uc">
+          <div class="uc-title">Client Materials</div>
+          <div class="uc-items">Automated reporting · pitch decks · factsheet generation</div>
+        </div>
+      </div>
+      <div class="q" style="margin-top:10px;">
+        <p>→ Identify the next 3 problems where a domain expert + AI agent can ship in weeks.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 10 KEY TAKEAWAYS ── -->
+  <div class="slide">
+    <div class="slide-num">10 / 10</div>
+    <div class="slide-logo">MIM</div>
+    <div class="si">
+      <div class="eyebrow">Summary</div>
+      <h2>Key <em>Takeaways</em></h2>
+      <div class="divider"></div>
+      <div style="flex:1;">
+        <div class="tk">
+          <div class="tk-num">1</div>
+          <div class="tk-body"><strong>AI has crossed a threshold — from assistant to agent</strong><span>The division of labor has fundamentally changed</span></div>
+        </div>
+        <div class="tk">
+          <div class="tk-num">2</div>
+          <div class="tk-body"><strong>The bottleneck moves</strong><span>From "can we build it?" to "can we define it well?" — domain expertise is now the critical input</span></div>
+        </div>
+        <div class="tk">
+          <div class="tk-num">3</div>
+          <div class="tk-body"><strong>Value is measurable</strong><span>10× speed &nbsp;·&nbsp; significant cost reduction &nbsp;·&nbsp; expanded analytical capability</span></div>
+        </div>
+        <div class="tk">
+          <div class="tk-num">4</div>
+          <div class="tk-body"><strong>Domain expertise is the scarcest resource — and now the most powerful one</strong><span>Subject matter experts can operationalize ideas that would never have reached the dev queue</span></div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-family:Georgia,serif;font-size:13px;color:var(--dkgray);font-style:italic;border-left:3px solid var(--blue);padding-left:12px;">
+        "The firms that combine deep domain knowledge with agentic AI will have a durable advantage."
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<div class="nav">
+  <button class="nav-btn" id="prev" disabled>← Prev</button>
+  <div class="progress-dots" id="dots"></div>
+  <span class="slide-counter" id="counter">1 / 10</span>
+  <button class="nav-btn" id="next">Next →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dots   = document.getElementById('dots');
+  const prev   = document.getElementById('prev');
+  const next   = document.getElementById('next');
+  const ctr    = document.getElementById('counter');
+  let cur = 0;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' on' : '');
+    d.addEventListener('click', () => goTo(i));
+    dots.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[cur].classList.remove('active');
+    dots.children[cur].classList.remove('on');
+    cur = Math.max(0, Math.min(n, slides.length - 1));
+    slides[cur].classList.add('active');
+    dots.children[cur].classList.add('on');
+    ctr.textContent = `${cur + 1} / ${slides.length}`;
+    prev.disabled = cur === 0;
+    next.disabled = cur === slides.length - 1;
+  }
+
+  prev.addEventListener('click', () => goTo(cur - 1));
+  next.addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight','ArrowDown',' '].includes(e.key)) goTo(cur + 1);
+    if (['ArrowLeft','ArrowUp'].includes(e.key))        goTo(cur - 1);
+  });
+</script>
+</body>
+</html>
